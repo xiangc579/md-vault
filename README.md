@@ -6,10 +6,12 @@
 
 <p align="center">
   <a href="README.md">English</a> •
-  <a href="README_ZH.md">简体中文</a>
+  <a href="README_ZH.md">简体中文</a> •
+  <a href="https://xiangc579.github.io/md-vault/"><strong>⚡ Live Demo</strong></a>
 </p>
 
 <p align="center">
+  <a href="https://xiangc579.github.io/md-vault/"><img src="https://img.shields.io/badge/Live_Demo-Online-brightgreen?logo=googlechrome&logoColor=white" alt="Live Demo"></a>
   <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT">
   <img src="https://img.shields.io/badge/Zero-Dependencies-success.svg" alt="Zero Dependencies">
   <img src="https://img.shields.io/badge/Architecture-Single--File%20HTML-orange.svg" alt="Single File HTML">
@@ -69,6 +71,10 @@ Long lists and tables in raw Markdown get tedious to scroll through. MD-Vault pa
 ## 🚀 Quick Start
 
 No installation, no Docker, and no Node.js required.
+
+### 🌐 Instant Online Preview (Zero Setup)
+Experience MD-Vault immediately in your browser without cloning or downloading anything:  
+👉 **[Launch Live Demo](https://xiangc579.github.io/md-vault/)** *(Preloaded with safe example templates; drag & drop your own `.md` file anytime!)*
 
 ### Method 1: Direct Local Open (Fastest)
 1. Clone or download this repository:

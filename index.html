@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Markdown Vault</title>
+  <title>MD-Vault</title>
   <!-- 字体：Mulish（正文） + JetBrains Mono（密码 / 动态码），使用国内镜像 -->
   <link rel="preconnect" href="https://fonts.loli.net">
   <link rel="stylesheet" href="https://fonts.loli.net/css2?family=Mulish:wght@400;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
@@ -263,18 +263,18 @@
 <body>
   <div class="layout">
     <aside class="sidebar">
-      <div class="brand">🔐 Markdown Vault</div>
-      <input class="search" id="search" type="search" placeholder="搜索平台 / 账号…" autocomplete="off">
+      <div class="brand">🔐 MD-Vault</div>
+      <input class="search" id="search" type="search" placeholder="Search platforms, accounts, tags… (/)" autocomplete="off">
       <nav class="toc" id="toc"></nav>
     </aside>
 
     <main class="main">
       <div class="header">
-        <h1 id="docTitle">密码管理</h1>
+        <h1 id="docTitle">Password Vault</h1>
         <div class="actions">
           <input type="file" id="fileInput" accept=".md,.markdown,.txt" hidden>
-          <button class="btn" id="openBtn">打开 .md 文件</button>
-          <button class="btn" id="reloadBtn">重新加载模板</button>
+          <button class="btn" id="openBtn">Open .md File</button>
+          <button class="btn" id="reloadBtn">Reload Template</button>
         </div>
       </div>
       <div id="notes"></div>
@@ -284,118 +284,291 @@
   <div class="toast" id="toast"></div>
 
   <!-- file:// 方式打开时无法 fetch 本地文件，使用此内置完整范例兜底 -->
-  <script type="text/plain" id="fallbackMd"># 密码管理索引表 (Password Vault Template)
+  <script type="text/plain" id="fallbackMd"># Password Vault Template
 
-> **使用说明**：
-> 1. 本文档采用标准 Markdown 语法维护，每个二级标题（`##`）代表一个独立平台或应用。
-> 2. 所有需要**一键复制**的内容（密码、Token、API Key、2FA 密钥）均置于独立的代码块中；行内代码（如账号、ID）也可直接点击复制。
-> 3. 代码块标记为 ````totp` 的条目会自动计算为**30秒倒计时动态验证码**，点击右侧图标即可直接复制最新动态口令。
+> **Instructions**:
+> 1. This document uses standard Markdown syntax. Each second-level heading (`##`) represents an individual platform or application.
+> 2. All sensitive credentials that require **one-click copying** (passwords, tokens, API keys, 2FA secrets, mnemonics) must be enclosed in standalone code blocks (` ```text ` or ` ```totp `) for instant copying in the companion Web renderer (`index.html`).
+> 3. Code blocks tagged with ````totp` will be automatically calculated by the companion `index.html` renderer into **real-time 30-second countdown dynamic 2FA codes**. Click to copy the latest one-time password directly.
 
-# 一、 常用与核心平台
+---
 
-## GitHub (主账号)
-- **平台网址**: https://github.com/login
-- **登录账号**: `developer@example.com`
-- **标签分类**: `#核心` `#开发`
-- **登录密码**:
+## 📑 Table of Contents
+
+- [I. Core Ecosystem & Accounts](#i-core-ecosystem--accounts)
+  - [Apple ID (Personal & Developer)](#apple-id-personal--developer)
+  - [Google Account](#google-account)
+  - [Microsoft (Microsoft 365)](#microsoft-microsoft-365)
+- [II. Email & Communication Infrastructure](#ii-email--communication-infrastructure)
+  - [Proton Mail (Encrypted Email & Mnemonic)](#proton-mail-encrypted-email--mnemonic)
+  - [Business Email / SMTP Gateway](#business-email--smtp-gateway)
+- [III. Cloud & DevOps Infrastructure](#iii-cloud--devops-infrastructure)
+  - [GitHub (Code Hosting & 2FA)](#github-code-hosting--2fa)
+  - [Cloud Server / VPS (Root Credentials & AccessKey)](#cloud-server--vps-root-credentials--accesskey)
+  - [Cloudflare (CDN & Security)](#cloudflare-cdn--security)
+- [IV. Commerce, Payments & Banking](#iv-commerce-payments--banking)
+  - [Payment Gateway / WeChat Pay (Merchant Platform)](#payment-gateway--wechat-pay-merchant-platform)
+  - [Merchant Center / Alipay (Business Account)](#merchant-center--alipay-business-account)
+  - [Corporate NetBanking (Hardware U-Key / Token)](#corporate-netbanking-hardware-u-key--token)
+- [V. Corporate Compliance & Government Portals](#v-corporate-compliance--government-portals)
+  - [Tax Administration Portal (Corporate Tax Filing)](#tax-administration-portal-corporate-tax-filing)
+  - [Internet Security & Compliance Filing (ICP / Cyber Bureau)](#internet-security--compliance-filing-icp--cyber-bureau)
+- [VI. Brand Promotion & Content Communities](#vi-brand-promotion--content-communities)
+  - [X / Twitter (Official Social Media)](#x--twitter-official-social-media)
+  - [Developer Community (Juejin / Dev.to)](#developer-community-juejin--devto)
+  - [Creator Platform (Xiaohongshu / Medium)](#creator-platform-xiaohongshu--medium)
+- [VII. Community & Operations Support](#vii-community--operations-support)
+  - [Telegram (Personal Account & Notification Bot)](#telegram-personal-account--notification-bot)
+  - [Discord (Community & Developer Workspace)](#discord-community--developer-workspace)
+
+---
+
+# I. Core Ecosystem & Accounts
+
+## Apple ID (Personal & Developer)
+
+### Personal Apple ID
+- **Website**: https://account.apple.com/account
+- **Account / Email**: `personal@example.com`
+- **Region**: US / Global
+- **Password**:
+```text
+ApplePass#2026!Sec
+```
+
+### Apple Developer Account
+- **Developer Portal**: https://developer.apple.com/account
+- **App Store Connect**: https://appstoreconnect.apple.com
+- **Account / Email**: `developer@company.com`
+- **Enabled Services**: Certificates, Identifiers & Profiles (DeviceCheck)
+
+---
+
+## Google Account
+- **Login Portal**: https://accounts.google.com
+- **Primary Email**: `main.account@gmail.com`
+- **Recovery Email**: `backup.recovery@example.com`
+- **Recovery Phone**: `+1 (555) 019-2834`
+- **2FA One-Time Password (TOTP Secret)**:
+```totp
+HXDMVJECJJWSRB3HWIZR4IFUGFTMXBOZ
+```
+- **GCP Billing Address**:
+```text
+1600 Amphitheatre Parkway
+Mountain View, CA 94043
+United States
+```
+
+---
+
+## Microsoft (Microsoft 365)
+- **Subscription Type**: Microsoft 365 Business Standard
+- **Admin Account**: `admin@tenant.onmicrosoft.com`
+- **Password**:
+```text
+Ms365#Admin!Passwd
+```
+
+---
+
+# II. Email & Communication Infrastructure
+
+## Proton Mail (Encrypted Email & Mnemonic)
+- **Website**: https://proton.me/
+- **Account / Email**: `core_ops@proton.me`
+- **Password**:
+```text
+Proton#Vault!2026
+```
+- **Recovery Mnemonic Phrase (12 Words)**:
+```text
+abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about
+```
+
+---
+
+## Business Email / SMTP Gateway
+- **Webmail Portal**: https://mail.company.com/
+- **Email Address**: `service@company.com`
+- **API Key / App Password**:
+```text
+re_8xDTynvW_xxxxxxxxxxxx
+```
+- **SMTP Server**: `smtp.resend.com:587`
+
+---
+
+# III. Cloud & DevOps Infrastructure
+
+## GitHub (Code Hosting & 2FA)
+- **Website**: https://github.com/login
+- **Username / Email**: `developer@example.com`
+- **Password**:
 ```text
 K8#mP$9xL2@qW7!zR
 ```
-- **2FA 动态口令**:
+- **2FA One-Time Password (TOTP Secret)**:
 ```totp
 JBSWY3DPEHPK3PXP
 ```
-- **2FA 备用恢复码**:
+- **2FA Recovery Codes**:
 ```text
 3a1b-4c2d
 9e8f-7g6h
 5i4j-3k2l
 1m0n-9o8p
 ```
-- **备注说明**: 绑定了个人双币信用卡；SSH Key 公钥位于本地 `~/.ssh/id_ed25519.pub`。
+- **SSH Public Key Path**: `~/.ssh/id_ed25519.pub`
 
-## Google Workspace
-- **平台网址**: https://accounts.google.com
-- **登录账号**: `work.account@company.com`
-- **标签分类**: `#工作` `#邮箱`
-- **登录密码**:
+---
+
+## Cloud Server / VPS (Root Credentials & AccessKey)
+- **Server Host / IP**: `198.51.100.245:22`
+- **SSH User**: `root`
+- **SSH Password**:
 ```text
-G9!vN8#xP2@qL5$w
+Srv_Production_9921#Root
 ```
-- **2FA 动态口令**:
-```totp
-HXDMVJECJJWSRB3HWIZR4IFUGFTMXBOZ
-```
-- **安全邮箱**: `backup.personal@gmail.com`
-
-# 二、 开发与基础设施
-
-## 阿里云 ECS / 控制台
-- **平台网址**: https://signin.aliyun.com
-- **主账号 / 企业别名**: `example-corp`
-- **子账号 (RAM)**: `ops-admin`
-- **登录密码**:
-```text
-Aliyun2026!#SecurePass
-```
-- **2FA 动态口令**:
-```totp
-N4XW65DFOZXW633PN5XW6===
-```
-- **AccessKey ID**: `LTAI5t8xxxxxxxxxxxx`
+- **AccessKey ID**: `LTAI5tExampleKeyID123`
 - **AccessKey Secret**:
 ```text
-wK9#8xL2qW7zR8mP9xL2qW7zR8mP9x
+ExampleSecretKeyString998877665544332211
 ```
 
-## 服务器 Root 凭证 (Ubuntu 生产机)
-- **主机地址**: `198.51.100.245:22`
-- **登录用户**: `root`
-- **SSH 密码**:
+---
+
+## Cloudflare (CDN & Security)
+- **Dashboard**: https://dash.cloudflare.com/
+- **Account / Email**: `ops@example.com`
+- **Turnstile Site Key**:
 ```text
-Srv_Production_9921#Root
+0x4AAAAAAABBBBBBBCCCCDDD
 ```
-- **Sudo 提权密码**:
+- **Turnstile Secret Key**:
 ```text
-Srv_Production_9921#Root
+0x4AAAAAAABBBBBBBCCCCDDD-SecretKeyExample
 ```
 
-# 三、 金融与支付
+---
 
-## 招商银行 (企业网银)
-- **客户端版本**: PC 桌面专业版
-- **登录账号**: `6225880100000000`
-- **用户识别码**: `USER0001`
-- **查询密码**:
+# IV. Commerce, Payments & Banking
+
+## Payment Gateway / WeChat Pay (Merchant Platform)
+- **Merchant Dashboard**: https://pay.weixin.qq.com/
+- **Merchant ID (MCH ID)**: `1900000109`
+- **Operator Username**: `admin@1900000109`
+- **Operation Password / PIN**:
+```text
+654321
+```
+
+---
+
+## Merchant Center / Alipay (Business Account)
+- **Business Center**: https://b.alipay.com
+- **Super Admin Account**: `business@example.com`
+- **Login Password**:
+```text
+AliPay#Login!2026
+```
+- **Payment PIN (6 digits)**:
+```text
+889900
+```
+
+---
+
+## Corporate NetBanking (Hardware U-Key / Token)
+- **Client Version**: Desktop Professional Suite
+- **Account Number**: `6225880100000000`
+- **User Identifier**: `USER0001`
+- **Query PIN**:
 ```text
 829103
 ```
-- **U-Key 交易密码**:
+- **Hardware U-Key Transaction PIN**:
 ```text
 918273
 ```
-- **备注说明**: 需配合白色 Type-C 物理 U-Key 硬件使用。
+- **Notes**: Requires physical Type-C hardware security token.
 
-# 四、 团队协作与多账号共存平台
+---
 
-## 飞书 / Lark (多角色)
+# V. Corporate Compliance & Government Portals
 
-### 个人组织
-- **登录手机**: `+86 13800000000`
-- **密码**:
+## Tax Administration Portal (Corporate Tax Filing)
+- **Taxpayer Identification Number (TIN)**: `91110000000000001X`
+- **Authorized Contact Phone**: `+86 13800000000`
+- **Withholding / Tax Filing PIN**:
 ```text
-Feishu#Personal#2026
+Tax#2026!Passwd
 ```
 
-### 客户外包组织
-- **登录邮箱**: `contractor@client.com`
-- **密码**:
+---
+
+## Internet Security & Compliance Filing (ICP / Cyber Bureau)
+- **Portal Website**: National Cyber Security & Compliance Portal
+- **Unified Social Credit Code**: `91110000000000001X`
+- **Officer Phone**: `+86 13800000000`
+
+---
+
+# VI. Brand Promotion & Content Communities
+
+## X / Twitter (Official Social Media)
+- **Website**: https://x.com/
+- **Official Handle**: `@company_official`
+- **Authentication**: Google OAuth Single Sign-On
+- **Bound Security Email**: `social@example.com`
+
+---
+
+## Developer Community (Juejin / Dev.to)
+- **Website**: https://juejin.cn
+- **Login Phone / ID**: `13800000000`
+- **Channel Purpose**: Engineering blog & product changelogs
+
+---
+
+## Creator Platform (Xiaohongshu / Medium)
+- **Creator Studio**: https://creator.xiaohongshu.com/
+- **Bound Phone**: `13800000000`
+- **Login Method**: Mobile QR Code Scan
+- **Studio / Workspace Name**: Indie Developer Studio
+
+---
+
+# VII. Community & Operations Support
+
+## Telegram (Personal Account & Notification Bot)
+- **Bound Email**: `telegram_user@proton.me`
+- **Two-Step Verification Password (2FA)**:
 ```text
-Client_Vendor_Pass!998
+Tg#Secure2026!
 ```
-- **2FA 动态口令**:
-```totp
-MZXW6YTBOI======
+- **Password Hint**:
+```text
+MyFavoritePetName
+```
+
+### Notification Bot
+- **Bot Name**: `app_notify_bot`
+- **HTTP API Token**:
+```text
+1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ
+```
+- **Chat ID**: `987654321`
+
+---
+
+## Discord (Community & Developer Workspace)
+- **Website**: https://discord.com/
+- **Account / Email**: `discord@example.com`
+- **Bound Phone**: `+44 7700 900123`
+- **Password**:
+```text
+Discord#2026!Pass
 ```
 </script>
 
@@ -435,6 +608,7 @@ MZXW6YTBOI======
     }
 
     let toastTimer;
+    let isZh = false;
     function toast(msg) {
       const t = $('#toast');
       t.textContent = msg;
@@ -445,12 +619,12 @@ MZXW6YTBOI======
 
     function copy(text, btn) {
       navigator.clipboard.writeText(text).then(() => {
-        toast('已复制');
+        toast(isZh ? '已复制' : 'Copied to clipboard');
         if (!btn) return;
         btn.innerHTML = ICON_DONE;
         btn.classList.add('done');
         setTimeout(() => { btn.innerHTML = ICON_COPY; btn.classList.remove('done'); }, 1200);
-      }).catch(() => toast('复制失败，请检查浏览器权限'));
+      }).catch(() => toast(isZh ? '复制失败，请检查浏览器权限' : 'Failed to copy. Check browser permissions.'));
     }
 
     function createTotp(raw) {
@@ -468,14 +642,14 @@ MZXW6YTBOI======
       const val = el('span', 'secret-val');
       const side = el('div', 'secret-side');
       const btn = el('button', 'copy', ICON_COPY);
-      btn.title = kind === 'totp' ? '复制动态口令' : '复制';
+      btn.title = kind === 'totp' ? (isZh ? '复制动态口令' : 'Copy TOTP') : (isZh ? '复制' : 'Copy');
 
       if (kind === 'totp') {
         try {
           box._totp = createTotp(value);
           val.textContent = '--- ---';
         } catch (e) {
-          val.textContent = '密钥格式错误';
+          val.textContent = isZh ? '密钥格式错误' : 'Invalid TOTP Secret';
         }
         side.appendChild(el('span', 'countdown', ''));
         btn.onclick = () => box._totp && copy(box._totp.generate(), btn);
@@ -566,7 +740,7 @@ MZXW6YTBOI======
       const sections = [];
       const notes = [];
       let section = null, card = null, skipping = false;
-      let title = '密码管理';
+      let title = 'Password Vault';
 
       const ensureSection = (name) => {
         section = { name, cards: [] };
@@ -574,7 +748,7 @@ MZXW6YTBOI======
       };
       const flushCard = () => {
         if (card) {
-          if (!section) ensureSection('未分类');
+          if (!section) ensureSection(isZh ? '未分类' : 'Uncategorized');
           section.cards.push(buildCard(card.name, card.nodes));
         }
         card = null;
@@ -603,6 +777,12 @@ MZXW6YTBOI======
       });
       flushCard();
 
+      // 检测语言并动态更新界面
+      isZh = /[\u4e00-\u9fa5]/.test(title + markdown.slice(0, 1000));
+      $('#search').placeholder = isZh ? '搜索平台 / 账号… (/)' : 'Search platforms, accounts, tags… (/)';
+      $('#openBtn').textContent = isZh ? '打开 .md 文件' : 'Open .md File';
+      $('#reloadBtn').textContent = isZh ? '重新加载模板' : 'Reload Template';
+
       // 标题与说明
       $('#docTitle').textContent = title;
       document.title = title;
@@ -610,7 +790,7 @@ MZXW6YTBOI======
       notesBox.innerHTML = '';
       if (notes.length) {
         const details = el('details', 'notes');
-        details.appendChild(el('summary', '', '使用说明'));
+        details.appendChild(el('summary', '', isZh ? '使用说明' : 'Instructions'));
         notes.forEach((n) => details.appendChild(n));
         notesBox.appendChild(details);
       }
@@ -642,7 +822,7 @@ MZXW6YTBOI======
         toc.appendChild(tocGroup);
       });
       if (!container.children.length) {
-        container.innerHTML = '<div class="empty">未解析到平台条目（请使用 ## 二级标题定义平台）</div>';
+        container.innerHTML = `<div class="empty">${isZh ? '未解析到平台条目（请使用 ## 二级标题定义平台）' : 'No platform entries found. (Use ## headings to define platforms)'}</div>`;
       }
 
       applySearch();
@@ -694,7 +874,7 @@ MZXW6YTBOI======
     function readFile(file) {
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = (e) => { render(e.target.result); toast(`已加载 ${file.name}`); };
+      reader.onload = (e) => { render(e.target.result); toast(isZh ? `已加载 ${file.name}` : `Loaded ${file.name}`); };
       reader.readAsText(file);
     }
 

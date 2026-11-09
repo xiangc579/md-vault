@@ -6,10 +6,12 @@
 
 <p align="center">
   <a href="README.md">English</a> •
-  <a href="README_ZH.md">简体中文</a>
+  <a href="README_ZH.md">简体中文</a> •
+  <a href="https://xiangc579.github.io/md-vault/"><strong>⚡ 在线体验 Demo</strong></a>
 </p>
 
 <p align="center">
+  <a href="https://xiangc579.github.io/md-vault/"><img src="https://img.shields.io/badge/在线演示-Live_Demo-brightgreen?logo=googlechrome&logoColor=white" alt="在线演示"></a>
   <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT">
   <img src="https://img.shields.io/badge/Zero-Dependencies-success.svg" alt="Zero Dependencies">
   <img src="https://img.shields.io/badge/Architecture-Single--File%20HTML-orange.svg" alt="Single File HTML">
@@ -69,6 +71,10 @@ HXDMVJECJJWSRB3HWIZR4IFUGFTMXBOZ
 ## 🚀 快速上手
 
 无需安装任何运行时环境，无 Docker 依赖，无构建过程。
+
+### 🌐 在线免安装体验（零配置秒开）
+直接在浏览器中打开官方演示，即刻体验 MD-Vault：  
+👉 **[启动在线演示 Demo](https://xiangc579.github.io/md-vault/)** *(已预置安全示例模板，随时可拖入自己的 `.md` 文件测试！)*
 
 ### 方式一：本地直接双击打开（最简单）
 1. 克隆或下载本仓库源码：
