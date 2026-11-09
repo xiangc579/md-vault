@@ -1,0 +1,19 @@
+# OS Metadata
+.DS_Store
+Thumbs.db
+
+# IDE & Editor Config
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Personal Password / Secret Files (Safety Guardrails)
+passwords.md
+my_passwords.md
+*.private.md
+*.secret.md
+*.vault.md
+secrets/
+private/
+vault/

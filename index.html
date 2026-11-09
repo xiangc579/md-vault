@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Vault</title>
+  <!-- 字体：Mulish（正文） + JetBrains Mono（密码 / 动态码），使用国内镜像 -->
+  <link rel="preconnect" href="https://fonts.loli.net">
+  <link rel="stylesheet" href="https://fonts.loli.net/css2?family=Mulish:wght@400;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+  <!-- Markdown 解析 + TOTP 算法 -->
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/otpauth@9.3.1/dist/otpauth.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #F7F8FA;
+      --card: #FFFFFF;
+      --border: #E6E8EC;
+      --divider: #F0F1F4;
+      --text: #1F2937;
+      --muted: #6B7280;
+      --faint: #9CA3AF;
+      --primary: #2563EB;
+      --primary-soft: #EEF3FE;
+      --secret-bg: #F4F5F7;
+      --success: #16A34A;
+      --danger: #DC2626;
+      --font-sans: "Mulish", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.45 var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ---------- 布局：左侧目录 + 右侧卡片 ---------- */
+    .layout {
+      display: grid;
+      grid-template-columns: 232px minmax(0, 1fr);
+      max-width: 1320px;
+      margin: 0 auto;
+    }
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px 14px 20px 20px;
+      border-right: 1px solid var(--border);
+    }
+    .brand { font-weight: 800; font-size: 16px; margin-bottom: 12px; }
+    .search {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--card);
+      font: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+    .search:focus { border-color: var(--primary); }
+    .toc { margin-top: 14px; }
+    .toc-section {
+      margin: 14px 0 4px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--faint);
+      letter-spacing: .04em;
+    }
+    .toc a {
+      display: block;
+      padding: 4px 8px;
+      border-radius: 5px;
+      color: var(--text);
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .toc a:hover { background: var(--primary-soft); color: var(--primary); text-decoration: none; }
+
+    .main { padding: 20px 24px 60px; min-width: 0; }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    .header h1 { margin: 0; font-size: 20px; font-weight: 800; }
+    .actions { display: flex; gap: 8px; }
+    .btn {
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--card);
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:hover { border-color: var(--primary); color: var(--primary); }
+    .notes { margin: 4px 0 8px; color: var(--muted); font-size: 13px; }
+    .notes summary { cursor: pointer; width: fit-content; }
+    .notes blockquote { margin: 6px 0 0; padding: 0 0 0 10px; border-left: 3px solid var(--border); }
+    .notes p, .notes ol { margin: 4px 0; }
+
+    /* ---------- 分类与卡片 ---------- */
+    .section-label {
+      margin: 22px 0 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .04em;
+      scroll-margin-top: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 12px;
+      align-items: start;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px 8px;
+      scroll-margin-top: 12px;
+    }
+    .card:target { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+    .card h2 { margin: 0 0 4px; font-size: 17px; font-weight: 700; }
+    .card h3 {
+      margin: 10px 0 2px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    /* 字段行：标签 | 值 */
+    .row {
+      display: grid;
+      grid-template-columns: 104px minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+      padding: 5px 0;
+      border-top: 1px solid var(--divider);
+    }
+    .card h2 + .row, .card h3 + .row { border-top: none; }
+    .row-label { font-size: 13px; color: var(--muted); line-height: 1.3; }
+    .row-value { min-width: 0; overflow-wrap: anywhere; }
+    .row-value code {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      cursor: copy;
+      border-radius: 4px;
+      padding: 1px 3px;
+    }
+    .row-value code:hover { background: var(--secret-bg); }
+    .row-plain { padding: 5px 0; color: var(--muted); font-size: 14px; border-top: 1px solid var(--divider); }
+    .row-plain p { margin: 0; }
+    .tag {
+      display: inline-block;
+      margin-right: 4px;
+      padding: 0 8px;
+      border-radius: 10px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* 可复制的密钥块 */
+    .secret {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 4px 4px 4px 10px;
+      border-radius: 6px;
+      background: var(--secret-bg);
+    }
+    .secret-val {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+    .secret.multi .secret-val { font-size: 14px; line-height: 1.5; }
+    .secret.totp { background: var(--primary-soft); }
+    .secret.totp .secret-val {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary);
+      letter-spacing: .06em;
+      font-variant-numeric: tabular-nums;
+    }
+    .secret-side { display: flex; align-items: center; gap: 6px; flex-shrink: 0; align-self: flex-start; }
+    .countdown {
+      min-width: 34px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .secret.totp.expiring .secret-val,
+    .secret.totp.expiring .countdown { color: var(--danger); }
+    .copy {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--faint);
+      cursor: pointer;
+    }
+    .copy:hover { background: var(--card); color: var(--primary); }
+    .copy.done { color: var(--success); }
+    .copy svg { width: 16px; height: 16px; }
+
+    .empty { color: var(--muted); padding: 40px 0; text-align: center; }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(20px);
+      padding: 7px 14px;
+      border-radius: 6px;
+      background: var(--text);
+      color: #fff;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all .2s;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .drop-hint { outline: 2px dashed var(--primary); outline-offset: -8px; }
+
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+      .toc { display: none; }
+      .grid { grid-template-columns: 1fr; }
+      .main { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">🔐 Markdown Vault</div>
+      <input class="search" id="search" type="search" placeholder="搜索平台 / 账号…" autocomplete="off">
+      <nav class="toc" id="toc"></nav>
+    </aside>
+
+    <main class="main">
+      <div class="header">
+        <h1 id="docTitle">密码管理</h1>
+        <div class="actions">
+          <input type="file" id="fileInput" accept=".md,.markdown,.txt" hidden>
+          <button class="btn" id="openBtn">打开 .md 文件</button>
+          <button class="btn" id="reloadBtn">重新加载模板</button>
+        </div>
+      </div>
+      <div id="notes"></div>
+      <div id="sections"></div>
+    </main>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <!-- file:// 方式打开时无法 fetch 本地文件，使用此内置完整范例兜底 -->
+  <script type="text/plain" id="fallbackMd"># 密码管理索引表 (Password Vault Template)
+
+> **使用说明**：
+> 1. 本文档采用标准 Markdown 语法维护，每个二级标题（`##`）代表一个独立平台或应用。
+> 2. 所有需要**一键复制**的内容（密码、Token、API Key、2FA 密钥）均置于独立的代码块中；行内代码（如账号、ID）也可直接点击复制。
+> 3. 代码块标记为 ````totp` 的条目会自动计算为**30秒倒计时动态验证码**，点击右侧图标即可直接复制最新动态口令。
+
+# 一、 常用与核心平台
+
+## GitHub (主账号)
+- **平台网址**: https://github.com/login
+- **登录账号**: `developer@example.com`
+- **标签分类**: `#核心` `#开发`
+- **登录密码**:
+```text
+K8#mP$9xL2@qW7!zR
+```
+- **2FA 动态口令**:
+```totp
+JBSWY3DPEHPK3PXP
+```
+- **2FA 备用恢复码**:
+```text
+3a1b-4c2d
+9e8f-7g6h
+5i4j-3k2l
+1m0n-9o8p
+```
+- **备注说明**: 绑定了个人双币信用卡；SSH Key 公钥位于本地 `~/.ssh/id_ed25519.pub`。
+
+## Google Workspace
+- **平台网址**: https://accounts.google.com
+- **登录账号**: `work.account@company.com`
+- **标签分类**: `#工作` `#邮箱`
+- **登录密码**:
+```text
+G9!vN8#xP2@qL5$w
+```
+- **2FA 动态口令**:
+```totp
+HXDMVJECJJWSRB3HWIZR4IFUGFTMXBOZ
+```
+- **安全邮箱**: `backup.personal@gmail.com`
+
+# 二、 开发与基础设施
+
+## 阿里云 ECS / 控制台
+- **平台网址**: https://signin.aliyun.com
+- **主账号 / 企业别名**: `example-corp`
+- **子账号 (RAM)**: `ops-admin`
+- **登录密码**:
+```text
+Aliyun2026!#SecurePass
+```
+- **2FA 动态口令**:
+```totp
+N4XW65DFOZXW633PN5XW6===
+```
+- **AccessKey ID**: `LTAI5t8xxxxxxxxxxxx`
+- **AccessKey Secret**:
+```text
+wK9#8xL2qW7zR8mP9xL2qW7zR8mP9x
+```
+
+## 服务器 Root 凭证 (Ubuntu 生产机)
+- **主机地址**: `198.51.100.245:22`
+- **登录用户**: `root`
+- **SSH 密码**:
+```text
+Srv_Production_9921#Root
+```
+- **Sudo 提权密码**:
+```text
+Srv_Production_9921#Root
+```
+
+# 三、 金融与支付
+
+## 招商银行 (企业网银)
+- **客户端版本**: PC 桌面专业版
+- **登录账号**: `6225880100000000`
+- **用户识别码**: `USER0001`
+- **查询密码**:
+```text
+829103
+```
+- **U-Key 交易密码**:
+```text
+918273
+```
+- **备注说明**: 需配合白色 Type-C 物理 U-Key 硬件使用。
+
+# 四、 团队协作与多账号共存平台
+
+## 飞书 / Lark (多角色)
+
+### 个人组织
+- **登录手机**: `+86 13800000000`
+- **密码**:
+```text
+Feishu#Personal#2026
+```
+
+### 客户外包组织
+- **登录邮箱**: `contractor@client.com`
+- **密码**:
+```text
+Client_Vendor_Pass!998
+```
+- **2FA 动态口令**:
+```totp
+MZXW6YTBOI======
+```
+</script>
+
+  <script>
+    const ICON_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+    const ICON_DONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+
+    const $ = (sel) => document.querySelector(sel);
+    const el = (tag, cls, html) => {
+      const node = document.createElement(tag);
+      if (cls) node.className = cls;
+      if (html !== undefined) node.innerHTML = html;
+      return node;
+    };
+
+    // ---------- Markdown 解析：代码块统一转为“密钥占位符” ----------
+    let secrets = [];
+    const md = window.markdownit({ html: false, linkify: true });
+    md.renderer.rules.fence = (tokens, idx) => {
+      const token = tokens[idx];
+      const lang = token.info.trim().split(/\s+/)[0].toLowerCase();
+      const value = token.content.replace(/\n+$/, '');
+      const i = secrets.push({ kind: lang === 'totp' ? 'totp' : 'text', value }) - 1;
+      return `<div class="secret-src" data-idx="${i}"></div>`;
+    };
+
+    // ---------- 工具函数 ----------
+    const usedSlugs = new Set();
+    function slugify(text) {
+      let base = text.trim().toLowerCase()
+        .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'item';
+      let slug = base, n = 2;
+      while (usedSlugs.has(slug)) slug = `${base}-${n++}`;
+      usedSlugs.add(slug);
+      return slug;
+    }
+
+    let toastTimer;
+    function toast(msg) {
+      const t = $('#toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 1400);
+    }
+
+    function copy(text, btn) {
+      navigator.clipboard.writeText(text).then(() => {
+        toast('已复制');
+        if (!btn) return;
+        btn.innerHTML = ICON_DONE;
+        btn.classList.add('done');
+        setTimeout(() => { btn.innerHTML = ICON_COPY; btn.classList.remove('done'); }, 1200);
+      }).catch(() => toast('复制失败，请检查浏览器权限'));
+    }
+
+    function createTotp(raw) {
+      const value = raw.trim();
+      if (value.startsWith('otpauth://')) return OTPAuth.URI.parse(value);
+      return new OTPAuth.TOTP({
+        algorithm: 'SHA1', digits: 6, period: 30,
+        secret: OTPAuth.Secret.fromBase32(value.replace(/\s+/g, '').toUpperCase()),
+      });
+    }
+
+    // ---------- 构建密钥块 ----------
+    function buildSecret({ kind, value }) {
+      const box = el('div', `secret ${kind}`);
+      const val = el('span', 'secret-val');
+      const side = el('div', 'secret-side');
+      const btn = el('button', 'copy', ICON_COPY);
+      btn.title = kind === 'totp' ? '复制动态口令' : '复制';
+
+      if (kind === 'totp') {
+        try {
+          box._totp = createTotp(value);
+          val.textContent = '--- ---';
+        } catch (e) {
+          val.textContent = '密钥格式错误';
+        }
+        side.appendChild(el('span', 'countdown', ''));
+        btn.onclick = () => box._totp && copy(box._totp.generate(), btn);
+      } else {
+        val.textContent = value;
+        if (value.includes('\n')) box.classList.add('multi');
+        btn.onclick = () => copy(value, btn);
+      }
+      side.appendChild(btn);
+      box.append(val, side);
+      return box;
+    }
+
+    // ---------- 解析列表项 “**标签**: 值” ----------
+    function parseItem(li) {
+      const clone = li.cloneNode(true);
+      const first = clone.firstElementChild;
+      const startsWithStrong = first && first.tagName === 'STRONG' &&
+        clone.innerHTML.trim().startsWith('<strong>');
+      if (!startsWithStrong) return { label: '', html: clone.innerHTML.trim() };
+      const label = first.textContent.trim();
+      first.remove();
+      const html = clone.innerHTML.replace(/^\s*[:：]\s*/, '').trim();
+      return { label, html };
+    }
+
+    function makeRow(label, content) {
+      const row = el('div', 'row');
+      row.appendChild(el('div', 'row-label', '')).textContent = label;
+      const value = el('div', 'row-value');
+      if (typeof content === 'string') {
+        value.innerHTML = content;
+        if (/标签|tag/i.test(label)) {
+          value.querySelectorAll('code').forEach((c) => c.replaceWith(el('span', 'tag', c.innerHTML)));
+        }
+      } else {
+        value.appendChild(content);
+      }
+      row.appendChild(value);
+      return row;
+    }
+
+    // ---------- 将一个平台的节点组装成卡片 ----------
+    function buildCard(name, nodes) {
+      const card = el('article', 'card');
+      card.id = slugify(name);
+      card.appendChild(el('h2', '', '')).textContent = name;
+
+      let pendingLabel = null;
+      const flush = () => {
+        if (pendingLabel !== null) card.appendChild(makeRow(pendingLabel, ''));
+        pendingLabel = null;
+      };
+
+      for (const node of nodes) {
+        if (node.tagName === 'UL' || node.tagName === 'OL') {
+          for (const li of node.children) {
+            const { label, html } = parseItem(li);
+            flush();
+            if (label && !html) pendingLabel = label;   // 值在后面的代码块中
+            else card.appendChild(makeRow(label, html));
+          }
+        } else if (node.classList && node.classList.contains('secret-src')) {
+          const secret = buildSecret(secrets[Number(node.dataset.idx)]);
+          card.appendChild(makeRow(pendingLabel || '', secret));
+          pendingLabel = null;
+        } else if (node.tagName === 'H3' || node.tagName === 'H4') {
+          flush();
+          card.appendChild(el('h3', '', '')).textContent = node.textContent;
+        } else {
+          flush();
+          const plain = el('div', 'row-plain');
+          plain.appendChild(node);
+          card.appendChild(plain);
+        }
+      }
+      flush();
+      return card;
+    }
+
+    // ---------- 主渲染流程 ----------
+    function render(markdown) {
+      secrets = [];
+      usedSlugs.clear();
+      const src = el('div');
+      src.innerHTML = md.render(markdown);
+
+      const sections = [];
+      const notes = [];
+      let section = null, card = null, skipping = false;
+      let title = '密码管理';
+
+      const ensureSection = (name) => {
+        section = { name, cards: [] };
+        sections.push(section);
+      };
+      const flushCard = () => {
+        if (card) {
+          if (!section) ensureSection('未分类');
+          section.cards.push(buildCard(card.name, card.nodes));
+        }
+        card = null;
+      };
+
+      [...src.children].forEach((node, index) => {
+        const tag = node.tagName;
+        if (tag === 'HR') return;
+        if (tag === 'H1') {
+          if (index === 0) { title = node.textContent.trim(); return; }
+          flushCard();
+          skipping = false;
+          ensureSection(node.textContent.trim());
+          return;
+        }
+        if (tag === 'H2') {
+          flushCard();
+          const text = node.textContent.trim();
+          skipping = /目录|table of contents/i.test(text);   // 忽略文档内手写目录，侧栏自动生成
+          if (!skipping) card = { name: text, nodes: [] };
+          return;
+        }
+        if (skipping) return;
+        if (card) card.nodes.push(node);
+        else if (!sections.length) notes.push(node);
+      });
+      flushCard();
+
+      // 标题与说明
+      $('#docTitle').textContent = title;
+      document.title = title;
+      const notesBox = $('#notes');
+      notesBox.innerHTML = '';
+      if (notes.length) {
+        const details = el('details', 'notes');
+        details.appendChild(el('summary', '', '使用说明'));
+        notes.forEach((n) => details.appendChild(n));
+        notesBox.appendChild(details);
+      }
+
+      // 分类卡片 + 侧栏目录
+      const container = $('#sections');
+      const toc = $('#toc');
+      container.innerHTML = '';
+      toc.innerHTML = '';
+      sections.filter((s) => s.cards.length).forEach((s) => {
+        const wrap = el('section', 'section');
+        const label = el('div', 'section-label');
+        label.textContent = s.name;
+        label.id = slugify(s.name);
+        const grid = el('div', 'grid');
+        s.cards.forEach((c) => grid.appendChild(c));
+        wrap.append(label, grid);
+        container.appendChild(wrap);
+
+        const tocGroup = el('div', 'toc-group');
+        tocGroup.appendChild(el('div', 'toc-section', '')).textContent = s.name;
+        s.cards.forEach((c) => {
+          const a = el('a');
+          a.href = `#${c.id}`;
+          a.textContent = c.querySelector('h2').textContent;
+          a.dataset.target = c.id;
+          tocGroup.appendChild(a);
+        });
+        toc.appendChild(tocGroup);
+      });
+      if (!container.children.length) {
+        container.innerHTML = '<div class="empty">未解析到平台条目（请使用 ## 二级标题定义平台）</div>';
+      }
+
+      applySearch();
+      tick();
+    }
+
+    // ---------- 搜索过滤 ----------
+    function applySearch() {
+      const q = $('#search').value.trim().toLowerCase();
+      document.querySelectorAll('.section').forEach((sec) => {
+        let visible = 0;
+        sec.querySelectorAll('.card').forEach((card) => {
+          const match = !q || card.textContent.toLowerCase().includes(q);
+          card.hidden = !match;
+          if (match) visible++;
+          const link = document.querySelector(`.toc a[data-target="${card.id}"]`);
+          if (link) link.hidden = !match;
+        });
+        sec.hidden = visible === 0;
+      });
+      document.querySelectorAll('.toc-group').forEach((g) => {
+        g.hidden = ![...g.querySelectorAll('a')].some((a) => !a.hidden);
+      });
+    }
+
+    // ---------- TOTP 每秒刷新 ----------
+    function tick() {
+      const remaining = 30 - (Math.floor(Date.now() / 1000) % 30);
+      document.querySelectorAll('.secret.totp').forEach((box) => {
+        if (!box._totp) return;
+        const code = box._totp.generate();
+        box.querySelector('.secret-val').textContent = `${code.slice(0, 3)} ${code.slice(3)}`;
+        box.querySelector('.countdown').textContent = `${remaining}s`;
+        box.classList.toggle('expiring', remaining <= 5);
+      });
+    }
+
+    // ---------- 数据加载 ----------
+    function loadTemplate() {
+      fetch('PASSWORD_TEMPLATE.md', { cache: 'no-store' })
+        .then((res) => {
+          if (!res.ok) throw new Error(res.status);
+          return res.text();
+        })
+        .then(render)
+        .catch(() => render($('#fallbackMd').textContent));
+    }
+
+    function readFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => { render(e.target.result); toast(`已加载 ${file.name}`); };
+      reader.readAsText(file);
+    }
+
+    // ---------- 事件绑定 ----------
+    $('#openBtn').onclick = () => $('#fileInput').click();
+    $('#fileInput').onchange = (e) => readFile(e.target.files[0]);
+    $('#reloadBtn').onclick = loadTemplate;
+    $('#search').addEventListener('input', applySearch);
+
+    // 点击行内代码（账号、AccessKey ID 等）直接复制
+    document.addEventListener('click', (e) => {
+      const code = e.target.closest('.row-value code');
+      if (code) copy(code.textContent);
+    });
+
+    // 支持拖拽 .md 文件到页面
+    document.addEventListener('dragover', (e) => { e.preventDefault(); document.body.classList.add('drop-hint'); });
+    document.addEventListener('dragleave', (e) => { if (!e.relatedTarget) document.body.classList.remove('drop-hint'); });
+    document.addEventListener('drop', (e) => {
+      e.preventDefault();
+      document.body.classList.remove('drop-hint');
+      readFile(e.dataTransfer.files[0]);
+    });
+
+    // 快捷键：/ 聚焦搜索
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== $('#search')) {
+        e.preventDefault();
+        $('#search').focus();
+      }
+    });
+
+    setInterval(tick, 1000);
+    loadTemplate();
+  </script>
+</body>
+</html>
