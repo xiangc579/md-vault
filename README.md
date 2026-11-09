@@ -73,7 +73,7 @@ No installation, no Docker, and no Node.js required.
 ### Method 1: Direct Local Open (Fastest)
 1. Clone or download this repository:
    ```bash
-   git clone https://github.com/your-username/md-vault.git
+   git clone https://github.com/xiangc579/md-vault.git
    cd md-vault
    ```
 2. Double-click `index.html` to open it directly in any modern browser (Chrome, Firefox, Safari, Edge).

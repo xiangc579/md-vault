@@ -73,7 +73,7 @@ HXDMVJECJJWSRB3HWIZR4IFUGFTMXBOZ
 ### 方式一：本地直接双击打开（最简单）
 1. 克隆或下载本仓库源码：
    ```bash
-   git clone https://github.com/your-username/md-vault.git
+   git clone https://github.com/xiangc579/md-vault.git
    cd md-vault
    ```
 2. 直接双击 `index.html`，在任意现代浏览器（Chrome、Firefox、Safari、Edge）中打开即可。
